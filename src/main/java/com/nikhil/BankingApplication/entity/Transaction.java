@@ -1,12 +1,17 @@
 package com.nikhil.BankingApplication.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
+@Getter
+@Setter
 public class Transaction {
 
     @Id
@@ -19,6 +24,7 @@ public class Transaction {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
+    @CreationTimestamp
     private LocalDateTime timestamp;
 
 

@@ -45,4 +45,12 @@ public class Account {
     )
     @JsonIgnore
     private List<Transaction> transactions = new ArrayList<>();
+
+    public void deposit(BigDecimal amount) {
+        this.balance = this.balance.add(amount);
+    }
+
+    public void withdraw(BigDecimal amount){
+        this.balance = this.balance.subtract(amount);
+    }
 }

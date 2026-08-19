@@ -5,6 +5,7 @@ import com.nikhil.BankingApplication.dto.AccountResponse;
 import com.nikhil.BankingApplication.entity.Account;
 import com.nikhil.BankingApplication.entity.AccountType;
 import com.nikhil.BankingApplication.entity.Customer;
+import com.nikhil.BankingApplication.exception.BankingException;
 import com.nikhil.BankingApplication.repository.AccountRepository;
 import com.nikhil.BankingApplication.repository.CustomerRepository;
 import com.nikhil.BankingApplication.service.AccountService;
@@ -28,10 +29,13 @@ public class AccountServiceImpl implements AccountService {
         Customer customer = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        if (request.getAccountType() == null || request.getAccountType().name().trim().isEmpty()) {
-            throw new BankingException("Account type is required and cannot be empty");
-        }
+
         AccountType type = request.getAccountType();
+
+        boolean exists = accountRepository.existsByOwnerAndAccountType(customer, type);
+        if (exists) {
+            throw new BankingException("Customer already has a " + type.name() + " account");
+        }
 
         Account account = new Account();
         account.setAccountType(type);
