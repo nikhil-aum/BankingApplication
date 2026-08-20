@@ -72,7 +72,7 @@ public class AccountServiceImpl implements AccountService {
         }
 
         TransactionResultDTO response = new TransactionResultDTO();
-        response.setMessage("Balance in your account : " + account.getBalance());
+        response.setMessage("Balance in your Account : " + account.getBalance());
 
         return response;
     }

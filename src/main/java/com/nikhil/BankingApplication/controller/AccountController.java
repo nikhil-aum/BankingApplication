@@ -32,7 +32,7 @@ public class AccountController {
     }
 
     @GetMapping("/{accountNumber}")
-    @Operation(summary = "Check account balance")
+    @Operation(summary = "Check Acount balance")
     public ResponseEntity<TransactionResultDTO> checkBalance(@PathVariable String accountNumber, Authentication authentication){
         String email = authentication.getName();
         TransactionResultDTO response = accountService.checkBalance(accountNumber,email);
