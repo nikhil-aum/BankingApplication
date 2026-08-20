@@ -1,9 +1,9 @@
 package com.nikhil.BankingApplication.service;
 
-import com.nikhil.BankingApplication.dto.DepositWithdrawRequestRequest;
-import com.nikhil.BankingApplication.dto.DepositWithdrawResponse;
+import com.nikhil.BankingApplication.dto.TransactionRequestDTO;
+import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 
 public interface WithdrawService {
 
-    DepositWithdrawResponse withdraw(DepositWithdrawRequestRequest request);
+    TransactionResultDTO withdraw(TransactionRequestDTO request);
 }

@@ -1,7 +1,7 @@
 package com.nikhil.BankingApplication.service.impl;
 
-import com.nikhil.BankingApplication.dto.DepositWithdrawRequestRequest;
-import com.nikhil.BankingApplication.dto.DepositWithdrawResponse;
+import com.nikhil.BankingApplication.dto.TransactionRequestDTO;
+import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.entity.Account;
 import com.nikhil.BankingApplication.entity.Transaction;
 import com.nikhil.BankingApplication.entity.TransactionStatus;
@@ -23,7 +23,7 @@ public class DepositServiceImpl implements DepositService {
     }
 
     @Override
-    public DepositWithdrawResponse deposit(DepositWithdrawRequestRequest request) {
+    public TransactionResultDTO deposit(TransactionRequestDTO request) {
         if (!request.getAccountNumber().equals(request.getConfirmAccountNumber())) {
             throw new BankingException("Something went wrong: Account numbers do not match");
         }
@@ -56,7 +56,7 @@ public class DepositServiceImpl implements DepositService {
         accountRepository.save(account);
 
 
-        DepositWithdrawResponse response = new DepositWithdrawResponse();
+        TransactionResultDTO response = new TransactionResultDTO();
         response.setMessage("₹" + request.getAmount() + " credited successfully in your account");
 
         return response;

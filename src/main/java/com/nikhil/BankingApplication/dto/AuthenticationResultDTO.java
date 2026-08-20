@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponse {
+public class AuthenticationResultDTO {
     private String token;
     private String message;
 }

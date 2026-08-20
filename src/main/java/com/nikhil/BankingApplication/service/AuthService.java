@@ -1,9 +1,9 @@
 package com.nikhil.BankingApplication.service;
 
-import com.nikhil.BankingApplication.dto.LoginRequest;
-import com.nikhil.BankingApplication.dto.RegisterRequest;
+import com.nikhil.BankingApplication.dto.CustomerLoginDTO;
+import com.nikhil.BankingApplication.dto.CustomerRegistrationDTO;
 
 public interface AuthService {
-    void register(RegisterRequest request);
-    String login(LoginRequest request);
+    void register(CustomerRegistrationDTO request);
+    String login(CustomerLoginDTO request);
 }

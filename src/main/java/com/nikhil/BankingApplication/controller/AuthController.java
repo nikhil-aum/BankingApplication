@@ -1,8 +1,8 @@
 package com.nikhil.BankingApplication.controller;
 
-import com.nikhil.BankingApplication.dto.AuthResponse;
-import com.nikhil.BankingApplication.dto.LoginRequest;
-import com.nikhil.BankingApplication.dto.RegisterRequest;
+import com.nikhil.BankingApplication.dto.AuthenticationResultDTO;
+import com.nikhil.BankingApplication.dto.CustomerLoginDTO;
+import com.nikhil.BankingApplication.dto.CustomerRegistrationDTO;
 import com.nikhil.BankingApplication.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -24,16 +24,16 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request){
+    public ResponseEntity<String> register(@Valid @RequestBody CustomerRegistrationDTO request){
          authService.register(request);
          return  ResponseEntity.status(HttpStatus.CREATED)
                  .body("Customer registered successfully");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request){
+    public ResponseEntity<AuthenticationResultDTO> login(@Valid @RequestBody CustomerLoginDTO request){
         String token = authService.login(request);
-        return  ResponseEntity.ok(new AuthResponse(token,"Login successful"));
+        return  ResponseEntity.ok(new AuthenticationResultDTO(token,"Login successful"));
     }
 
 }

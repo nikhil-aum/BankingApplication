@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DepositWithdrawResponse {
+public class TransactionResultDTO {
     private String message;
 }

@@ -1,7 +1,7 @@
 package com.nikhil.BankingApplication.service.impl;
 
-import com.nikhil.BankingApplication.dto.LoginRequest;
-import com.nikhil.BankingApplication.dto.RegisterRequest;
+import com.nikhil.BankingApplication.dto.CustomerLoginDTO;
+import com.nikhil.BankingApplication.dto.CustomerRegistrationDTO;
 import com.nikhil.BankingApplication.entity.Customer;
 import com.nikhil.BankingApplication.exception.DuplicateCustomerException;
 import com.nikhil.BankingApplication.exception.InvalidCredentialsException;
@@ -23,7 +23,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void register(RegisterRequest request) {
+    public void register(CustomerRegistrationDTO request) {
         if (repo.findByEmail(request.getEmail()).isPresent()) {
             throw new DuplicateCustomerException("Email already registered");
         }
@@ -35,7 +35,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String login(LoginRequest request) {
+    public String login(CustomerLoginDTO request) {
         Customer customer = repo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException());
         if (!encoder.matches(request.getPassword(), customer.getPassword())) {

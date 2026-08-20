@@ -1,7 +1,7 @@
 package com.nikhil.BankingApplication.controller;
 
-import com.nikhil.BankingApplication.dto.DepositWithdrawRequestRequest;
-import com.nikhil.BankingApplication.dto.DepositWithdrawResponse;
+import com.nikhil.BankingApplication.dto.TransactionRequestDTO;
+import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.service.WithdrawService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +21,8 @@ public class WithdrawController {
     }
 
     @PostMapping
-    public ResponseEntity<DepositWithdrawResponse> deposit(@Valid @RequestBody DepositWithdrawRequestRequest request) {
-        DepositWithdrawResponse response = withdrawService.withdraw(request);
+    public ResponseEntity<TransactionResultDTO> deposit(@Valid @RequestBody TransactionRequestDTO request) {
+        TransactionResultDTO response = withdrawService.withdraw(request);
         return ResponseEntity.ok(response);
     }
 }
