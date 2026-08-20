@@ -1,10 +1,12 @@
 package com.nikhil.BankingApplication.service.impl;
 
-import com.nikhil.BankingApplication.dto.AccountRequest;
-import com.nikhil.BankingApplication.dto.AccountResponse;
+import com.nikhil.BankingApplication.dto.AccountDetailsDTO;
+import com.nikhil.BankingApplication.dto.CreateAccountDTO;
+import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.entity.Account;
 import com.nikhil.BankingApplication.entity.AccountType;
 import com.nikhil.BankingApplication.entity.Customer;
+import com.nikhil.BankingApplication.exception.AccountOwnershipException;
 import com.nikhil.BankingApplication.exception.BankingException;
 import com.nikhil.BankingApplication.repository.AccountRepository;
 import com.nikhil.BankingApplication.repository.CustomerRepository;
@@ -25,7 +27,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountResponse  createAccount(AccountRequest request, String email) {
+    public AccountDetailsDTO createAccount(CreateAccountDTO request, String email) {
         Customer customer = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
@@ -46,7 +48,7 @@ public class AccountServiceImpl implements AccountService {
         Account savedAccount = accountRepository.save(account);
 
 
-        AccountResponse response = new AccountResponse();
+        AccountDetailsDTO response = new AccountDetailsDTO();
         response.setAccountNumber(savedAccount.getAccountNumber());
         response.setAccountType(savedAccount.getAccountType().name());
         response.setBalance(savedAccount.getBalance());
@@ -54,6 +56,27 @@ public class AccountServiceImpl implements AccountService {
 
         return response;
     }
+
+    @Override
+    public TransactionResultDTO checkBalance(String accountNumber, String email) {
+
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new BankingException("Customer not found"));
+
+
+        Account account = accountRepository.findById(accountNumber)
+                .orElseThrow(() -> new BankingException("Wrong account number....."));
+
+        if (!account.getOwner().getEmail().equals(email)) {
+            throw new AccountOwnershipException();
+        }
+
+        TransactionResultDTO response = new TransactionResultDTO();
+        response.setMessage("Balance in your account : " + account.getBalance());
+
+        return response;
+    }
+
 
 
 

@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AccountRequest {
+public class CreateAccountDTO {
 
     @NotNull(message="Account type is required")
     private AccountType accountType;

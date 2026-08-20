@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class DepositWithdrawRequestRequest {
+public class TransactionRequestDTO {
     @NotBlank(message = "Account number is required")
     private String accountNumber;
 

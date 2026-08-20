@@ -1,9 +1,10 @@
 package com.nikhil.BankingApplication.service;
 
-import com.nikhil.BankingApplication.dto.AccountRequest;
-import com.nikhil.BankingApplication.dto.AccountResponse;
+import com.nikhil.BankingApplication.dto.AccountDetailsDTO;
+import com.nikhil.BankingApplication.dto.CreateAccountDTO;
+import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 
 public interface AccountService {
-     AccountResponse createAccount(AccountRequest request, String email);
-
+     AccountDetailsDTO createAccount(CreateAccountDTO request, String email);
+     TransactionResultDTO checkBalance(String accountNumber, String email);
 }

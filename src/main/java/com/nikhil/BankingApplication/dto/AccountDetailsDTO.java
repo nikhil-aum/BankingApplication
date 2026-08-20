@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class AccountResponse {
+public class AccountDetailsDTO {
     private String accountNumber;
     private String accountType;
     private BigDecimal balance;
