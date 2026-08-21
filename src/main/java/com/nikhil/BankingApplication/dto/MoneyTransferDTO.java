@@ -2,6 +2,7 @@ package com.nikhil.BankingApplication.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class MoneyTransferDTO {
     @NotBlank(message = "Sender account number is required")
     private String senderAccountNumber;

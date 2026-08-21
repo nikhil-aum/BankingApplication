@@ -2,7 +2,9 @@ package com.nikhil.BankingApplication.entity;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -14,6 +16,8 @@ import java.util.List;
 @Table(name = "customers")
 @Getter
 @Setter
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class Customer {
 
     @Id

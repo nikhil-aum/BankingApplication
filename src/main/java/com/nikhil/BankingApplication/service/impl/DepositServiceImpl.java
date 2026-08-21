@@ -44,6 +44,10 @@ public class DepositServiceImpl implements DepositService {
 
             account.getTransactions().add(transaction);
             accountRepository.save(account);
+
+            TransactionResultDTO response = new TransactionResultDTO();
+            response.setMessage("Deposit failed: Amount must be greater than 0");
+            return response;
         }
 
 
