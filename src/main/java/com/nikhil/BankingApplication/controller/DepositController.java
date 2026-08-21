@@ -3,6 +3,7 @@ package com.nikhil.BankingApplication.controller;
 import com.nikhil.BankingApplication.dto.TransactionRequestDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.service.DepositService;
+<<<<<<< HEAD
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,6 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/deposit")
 @Tag(name = "3. Deposit", description = "Deposit APIs")
+=======
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/deposit")
+>>>>>>> main
 public class DepositController {
     private final DepositService depositService;
 
@@ -23,7 +32,10 @@ public class DepositController {
     }
 
     @PostMapping
+<<<<<<< HEAD
     @Operation(summary = "Deposit money")
+=======
+>>>>>>> main
     public ResponseEntity<TransactionResultDTO> deposit(@Valid @RequestBody TransactionRequestDTO request) {
         TransactionResultDTO response = depositService.deposit(request);
         return ResponseEntity.ok(response);
