@@ -1,0 +1,80 @@
+package com.nikhil.BankingApplication.service.impl;
+
+import com.nikhil.BankingApplication.dto.TransactionRequestDTO;
+import com.nikhil.BankingApplication.dto.TransactionResultDTO;
+import com.nikhil.BankingApplication.entity.Account;
+import com.nikhil.BankingApplication.entity.Transaction;
+import com.nikhil.BankingApplication.entity.TransactionStatus;
+import com.nikhil.BankingApplication.entity.TransactionType;
+import com.nikhil.BankingApplication.exception.AccountOwnershipException;
+import com.nikhil.BankingApplication.exception.BankingException;
+import com.nikhil.BankingApplication.repository.AccountRepository;
+import com.nikhil.BankingApplication.service.WithdrawService;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+
+
+@Service
+public class WithdrawServiceImpl implements WithdrawService {
+    private final AccountRepository accountRepository;
+
+    public WithdrawServiceImpl(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+
+    @Override
+    public TransactionResultDTO withdraw(TransactionRequestDTO request) {
+
+        if (!request.getAccountNumber().equals(request.getConfirmAccountNumber())) {
+            throw new BankingException("Something went wrong: Account numbers do not match");
+        }
+
+        Account account = accountRepository.findById(request.getAccountNumber())
+                .orElseThrow(() -> new AccountOwnershipException());
+
+        Transaction transaction = new Transaction();
+        transaction.setType(TransactionType.WITHDRAW);
+        transaction.setAmount(request.getAmount());
+        transaction.setAccount(account);
+
+        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            transaction.setDescription("Withdraw failed: Amount must be greater than 0");
+            transaction.setBalanceAfterTransaction(account.getBalance());
+            transaction.setStatus(TransactionStatus.FAILED);
+
+            account.getTransactions().add(transaction);
+            accountRepository.save(account);
+
+        }
+
+        if (request.getAmount().compareTo(account.getBalance()) > 0) {
+            transaction.setDescription("Withdrawal failed: Insufficient balance");
+            transaction.setBalanceAfterTransaction(account.getBalance());
+            transaction.setStatus(TransactionStatus.FAILED);
+
+            account.getTransactions().add(transaction);
+            accountRepository.save(account);
+
+            throw new BankingException("Withdrawal failed: Insufficient balance");
+        }
+
+        account.withdraw(request.getAmount());
+        transaction.setDescription("₹" + request.getAmount() + " debited successfully");
+        transaction.setBalanceAfterTransaction(account.getBalance());
+        transaction.setStatus(TransactionStatus.SUCCESS);
+
+        account.getTransactions().add(transaction);
+        accountRepository.save(account);
+
+
+        TransactionResultDTO response = new TransactionResultDTO();
+        response.setMessage("₹" + request.getAmount() + " debited successfully in your account");
+
+        return response;
+
+
+    }
+
+
+}
