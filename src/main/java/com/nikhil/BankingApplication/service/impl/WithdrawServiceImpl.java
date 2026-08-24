@@ -46,6 +46,9 @@ public class WithdrawServiceImpl implements WithdrawService {
             account.getTransactions().add(transaction);
             accountRepository.save(account);
 
+            TransactionResultDTO response = new TransactionResultDTO();
+            response.setMessage("Withdraw failed: Amount must be greater than 0");
+            return response;
         }
 
         if (request.getAmount().compareTo(account.getBalance()) > 0) {
