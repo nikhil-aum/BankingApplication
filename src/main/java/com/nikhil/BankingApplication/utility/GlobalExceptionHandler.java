@@ -1,9 +1,6 @@
 package com.nikhil.BankingApplication.utility;
 
-import com.nikhil.BankingApplication.exception.AccountOwnershipException;
-import com.nikhil.BankingApplication.exception.BankingException;
-import com.nikhil.BankingApplication.exception.DuplicateCustomerException;
-import com.nikhil.BankingApplication.exception.InvalidCredentialsException;
+import com.nikhil.BankingApplication.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -59,6 +56,13 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAccountNotFound(AccountNotFoundException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

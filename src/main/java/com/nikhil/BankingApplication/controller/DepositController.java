@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/deposit")
-@Tag(name = "3. Deposit", description = "Deposit APIs")
+@Tag(name = " Deposit", description = "Deposit APIs")
 public class DepositController {
     private final DepositService depositService;
 
