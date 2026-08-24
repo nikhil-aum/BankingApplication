@@ -1,6 +1,5 @@
 package com.nikhil.BankingApplication.service.impl;
 
-<<<<<<< HEAD
 import com.nikhil.BankingApplication.dto.AccountDetailsDTO;
 import com.nikhil.BankingApplication.dto.CreateAccountDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
@@ -8,13 +7,6 @@ import com.nikhil.BankingApplication.entity.Account;
 import com.nikhil.BankingApplication.entity.AccountType;
 import com.nikhil.BankingApplication.entity.Customer;
 import com.nikhil.BankingApplication.exception.AccountOwnershipException;
-=======
-import com.nikhil.BankingApplication.dto.CreateAccountDTO;
-import com.nikhil.BankingApplication.dto.AccountDetailsDTO;
-import com.nikhil.BankingApplication.entity.Account;
-import com.nikhil.BankingApplication.entity.AccountType;
-import com.nikhil.BankingApplication.entity.Customer;
->>>>>>> main
 import com.nikhil.BankingApplication.exception.BankingException;
 import com.nikhil.BankingApplication.repository.AccountRepository;
 import com.nikhil.BankingApplication.repository.CustomerRepository;
@@ -65,7 +57,7 @@ public class AccountServiceImpl implements AccountService {
         return response;
     }
 
-<<<<<<< HEAD
+
     @Override
     public TransactionResultDTO checkBalance(String accountNumber, String email) {
 
@@ -85,11 +77,6 @@ public class AccountServiceImpl implements AccountService {
 
         return response;
     }
-
-
-=======
->>>>>>> main
-
 
     private String generateAccountNumber() {
         SecureRandom random = new SecureRandom();

@@ -8,22 +8,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-<<<<<<< HEAD
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-=======
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
->>>>>>> main
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
 
-<<<<<<< HEAD
+
 @RestControllerAdvice
-=======
 @ControllerAdvice
->>>>>>> main
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateCustomerException.class)
