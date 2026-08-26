@@ -12,6 +12,8 @@ import com.nikhil.BankingApplication.exception.BankingException;
 import com.nikhil.BankingApplication.repository.AccountRepository;
 import com.nikhil.BankingApplication.repository.CustomerRepository;
 import com.nikhil.BankingApplication.service.AccountService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -20,6 +22,8 @@ import java.util.List;
 
 @Service
 public class AccountServiceImpl implements AccountService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
     private final AccountRepository accountRepository;
     private final CustomerRepository customerRepository;
 
@@ -30,14 +34,18 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountDetailsDTO createAccount(CreateAccountDTO request, String email) {
+
+        logger.info("Creating account of type {} for customer {}", request.getAccountType(), email);
+
         Customer customer = customerRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() ->new BankingException("Customer not found"));
 
 
         AccountType type = request.getAccountType();
 
         boolean exists = accountRepository.existsByOwnerAndAccountType(customer, type);
         if (exists) {
+            logger.warn("Customer {} already has a {} account", email, type.name());
             throw new BankingException("Customer already has a " + type.name() + " account");
         }
 
@@ -48,6 +56,7 @@ public class AccountServiceImpl implements AccountService {
         account.setAccountNumber(generateAccountNumber());
 
         Account savedAccount = accountRepository.save(account);
+        logger.info("Account {} created successfully for customer {}", savedAccount.getAccountNumber(), email);
 
 
         AccountDetailsDTO response = new AccountDetailsDTO();
@@ -63,16 +72,27 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public TransactionResultDTO checkBalance(String accountNumber, String email) {
 
+        logger.info("Checking balance for account {} and customer {}", accountNumber, email);
+
         Customer customer = customerRepository.findByEmail(email)
-                .orElseThrow(() -> new BankingException("Customer not found"));
+                .orElseThrow(() -> {
+                    logger.error("Customer not found with email {}", email);
+                    return new BankingException("Customer not found");
+                });
 
 
         Account account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new BankingException("Wrong account number....."));
+                .orElseThrow(() -> {
+                    logger.error("Customer not found with email {}", email);
+                    return new BankingException("Customer not found");
+                });
 
         if (!account.getOwner().getEmail().equals(email)) {
+            logger.warn("Ownership mismatch for account {} and customer {}", accountNumber, email);
             throw new AccountOwnershipException();
         }
+
+        logger.info("Balance for account {} is {}", accountNumber, account.getBalance());
 
         TransactionResultDTO response = new TransactionResultDTO();
         response.setMessage("Balance in your Account : " + account.getBalance());
@@ -93,8 +113,14 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<AccountListDTO> getMyAccounts(String email) {
+
+        logger.info("Fetching accounts for customer {}", email);
+
         Customer customer = customerRepository.findByEmail(email)
-                .orElseThrow(() -> new BankingException("Customer not found"));
+                .orElseThrow(() -> {
+                            logger.error("Customer not found with email {}", email);
+                            return new BankingException("Customer not found");
+                        });
 
         List<AccountListDTO> accounts = customer.getAccounts().stream()
                 .map(acc -> new AccountListDTO(
@@ -106,9 +132,11 @@ public class AccountServiceImpl implements AccountService {
                 .toList();
 
         if (accounts.isEmpty()) {
+            logger.warn("No accounts found for customer {}", customer.getName());
             throw new BankingException("No Accounts Found for customer " + customer.getName());
         }
 
+        logger.info("Found {} accounts for customer {}", accounts.size(), email);
         return accounts;
     }
 }

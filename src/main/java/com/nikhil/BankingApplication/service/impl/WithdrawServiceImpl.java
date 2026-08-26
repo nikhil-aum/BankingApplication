@@ -10,6 +10,8 @@ import com.nikhil.BankingApplication.exception.AccountOwnershipException;
 import com.nikhil.BankingApplication.exception.BankingException;
 import com.nikhil.BankingApplication.repository.AccountRepository;
 import com.nikhil.BankingApplication.service.WithdrawService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,6 +19,9 @@ import java.math.BigDecimal;
 
 @Service
 public class WithdrawServiceImpl implements WithdrawService {
+
+    private static final Logger logger = LoggerFactory.getLogger(WithdrawServiceImpl.class);
+
     private final AccountRepository accountRepository;
 
     public WithdrawServiceImpl(AccountRepository accountRepository) {
@@ -26,12 +31,20 @@ public class WithdrawServiceImpl implements WithdrawService {
     @Override
     public TransactionResultDTO withdraw(TransactionRequestDTO request) {
 
+        logger.info("Withdraw request received for account {} with amount {}",
+                request.getAccountNumber(), request.getAmount());
+
         if (!request.getAccountNumber().equals(request.getConfirmAccountNumber())) {
+            logger.error("Account number mismatch: {} & {}",
+                    request.getAccountNumber(), request.getConfirmAccountNumber());
             throw new BankingException("Something went wrong: Account numbers do not match");
         }
 
         Account account = accountRepository.findById(request.getAccountNumber())
-                .orElseThrow(() -> new AccountOwnershipException());
+                .orElseThrow(() -> {
+                    logger.error("Account not found with number {}", request.getAccountNumber());
+                    return new AccountOwnershipException();
+                });
 
         Transaction transaction = new Transaction();
         transaction.setType(TransactionType.WITHDRAW);
@@ -39,6 +52,9 @@ public class WithdrawServiceImpl implements WithdrawService {
         transaction.setAccount(account);
 
         if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+
+            logger.warn("Withdraw failed for account {}. Invalid amount: {}");
+
             transaction.setDescription("Withdraw failed: Amount must be greater than 0");
             transaction.setBalanceAfterTransaction(account.getBalance());
             transaction.setStatus(TransactionStatus.FAILED);
@@ -52,6 +68,10 @@ public class WithdrawServiceImpl implements WithdrawService {
         }
 
         if (request.getAmount().compareTo(account.getBalance()) > 0) {
+
+            logger.warn("Withdrawal failed for account {}. Requested amount {} is greater than balance {}",
+                    account.getAccountNumber(), request.getAmount(), account.getBalance());
+
             transaction.setDescription("Withdrawal failed: Insufficient balance");
             transaction.setBalanceAfterTransaction(account.getBalance());
             transaction.setStatus(TransactionStatus.FAILED);
@@ -69,6 +89,10 @@ public class WithdrawServiceImpl implements WithdrawService {
 
         account.getTransactions().add(transaction);
         accountRepository.save(account);
+
+        logger.info("Withdraw successful. Account {} new balance: {}", account.getAccountNumber(), account.getBalance());
+
+
 
 
         TransactionResultDTO response = new TransactionResultDTO();

@@ -10,12 +10,17 @@ import com.nikhil.BankingApplication.exception.AccountOwnershipException;
 import com.nikhil.BankingApplication.exception.BankingException;
 import com.nikhil.BankingApplication.repository.AccountRepository;
 import com.nikhil.BankingApplication.service.DepositService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
 public class DepositServiceImpl implements DepositService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DepositServiceImpl.class);
+
     private final AccountRepository accountRepository;
 
     public DepositServiceImpl(AccountRepository accountRepository) {
@@ -24,12 +29,22 @@ public class DepositServiceImpl implements DepositService {
 
     @Override
     public TransactionResultDTO deposit(TransactionRequestDTO request) {
+
+
+        logger.info("Deposit request received for account {} with amount {}",
+                request.getAccountNumber(), request.getAmount());
+
         if (!request.getAccountNumber().equals(request.getConfirmAccountNumber())) {
+            logger.error("Account number mismatch: {} & {}",
+                    request.getAccountNumber(), request.getConfirmAccountNumber());
             throw new BankingException("Something went wrong: Account numbers do not match");
         }
 
         Account account = accountRepository.findById(request.getAccountNumber())
-                .orElseThrow(() -> new AccountOwnershipException());
+                .orElseThrow(() -> {
+                    logger.error("Account not found with number {}", request.getAccountNumber());
+                    return new AccountOwnershipException();
+                });
 
 
         Transaction transaction = new Transaction();
@@ -38,12 +53,17 @@ public class DepositServiceImpl implements DepositService {
         transaction.setAccount(account);
 
         if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            transaction.setDescription("Deposit failed: Amount must be greater than 0");
+
+            logger.warn("Deposit failed for account {}. Invalid amount: {}",
+
+             request.getAccountNumber(), request.getAmount());
             transaction.setBalanceAfterTransaction(account.getBalance());
             transaction.setStatus(TransactionStatus.FAILED);
 
             account.getTransactions().add(transaction);
             accountRepository.save(account);
+
+
 
             TransactionResultDTO response = new TransactionResultDTO();
             response.setMessage("Deposit failed: Amount must be greater than 0");
@@ -58,6 +78,8 @@ public class DepositServiceImpl implements DepositService {
 
         account.getTransactions().add(transaction);
         accountRepository.save(account);
+
+        logger.info("Deposit successful. Account {} new balance: {}", account.getAccountNumber(), account.getBalance());
 
 
         TransactionResultDTO response = new TransactionResultDTO();
