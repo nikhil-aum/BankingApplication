@@ -1,6 +1,7 @@
 package com.nikhil.BankingApplication.service.impl;
 
 import com.nikhil.BankingApplication.dto.AccountDetailsDTO;
+import com.nikhil.BankingApplication.dto.AccountListDTO;
 import com.nikhil.BankingApplication.dto.CreateAccountDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.entity.Account;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.util.List;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -87,5 +89,26 @@ public class AccountServiceImpl implements AccountService {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public List<AccountListDTO> getMyAccounts(String email) {
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new BankingException("Customer not found"));
+
+        List<AccountListDTO> accounts = customer.getAccounts().stream()
+                .map(acc -> new AccountListDTO(
+                        acc.getAccountNumber(),
+                        acc.getOwner().getName(),
+                        acc.getBalance(),
+                        acc.getAccountType().name()
+                ))
+                .toList();
+
+        if (accounts.isEmpty()) {
+            throw new BankingException("No Accounts Found for customer " + customer.getName());
+        }
+
+        return accounts;
     }
 }

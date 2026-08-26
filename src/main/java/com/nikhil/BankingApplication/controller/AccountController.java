@@ -2,6 +2,7 @@ package com.nikhil.BankingApplication.controller;
 
 
 import com.nikhil.BankingApplication.dto.AccountDetailsDTO;
+import com.nikhil.BankingApplication.dto.AccountListDTO;
 import com.nikhil.BankingApplication.dto.CreateAccountDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.service.AccountService;
@@ -10,6 +11,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -39,4 +42,14 @@ public class AccountController {
         TransactionResultDTO response = accountService.checkBalance(accountNumber,email);
         return ResponseEntity.ok(response);
     }
-}
+
+    @GetMapping("/my-accounts")
+    @Operation(summary = "Get all accounts of logged-in customer")
+    public ResponseEntity<?> getMyAccounts(Authentication authentication) {
+        String email = authentication.getName();
+
+            List<AccountListDTO> response = accountService.getMyAccounts(email);
+            return ResponseEntity.ok(response);
+        }
+    }
+
