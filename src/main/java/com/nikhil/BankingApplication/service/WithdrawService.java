@@ -5,5 +5,5 @@ import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 
 public interface WithdrawService {
 
-    TransactionResultDTO withdraw(TransactionRequestDTO request);
+    TransactionResultDTO withdraw(TransactionRequestDTO request,String email);
 }

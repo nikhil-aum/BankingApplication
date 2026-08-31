@@ -2,6 +2,7 @@ package com.nikhil.BankingApplication.service.impl;
 
 
 import com.nikhil.BankingApplication.dto.AccountDetailsDTO;
+import com.nikhil.BankingApplication.dto.AccountListDTO;
 import com.nikhil.BankingApplication.dto.CreateAccountDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.entity.Account;
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -107,4 +109,43 @@ public class AccountServiceImplTest {
 
         Assertions.assertThrows(AccountOwnershipException.class, () -> accountService.checkBalance(account.getAccountNumber(), customer.getEmail()));
     }
+
+    @Test
+    void getMyAccounts_success() {
+
+        account.setOwner(customer);
+        customer.setAccounts(List.of(account));
+
+        when(customerRepository.findByEmail(customer.getEmail())).thenReturn(Optional.of(customer));
+
+
+        List<AccountListDTO> accounts = accountService.getMyAccounts(customer.getEmail());
+
+        Assertions.assertEquals(1, accounts.size());
+        Assertions.assertEquals("123456789012", accounts.get(0).getAccountNumber());
+        Assertions.assertEquals(BigDecimal.valueOf(5000), accounts.get(0).getBalance());
+        Assertions.assertEquals("SAVING", accounts.get(0).getAccountType());
+    }
+
+    @Test
+    void getMyAccounts_customerNotFound() {
+
+        when(customerRepository.findByEmail("vikesh@gmail.com")).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(BankingException.class,
+                () -> accountService.getMyAccounts("vikesh@gmail.com"));
+    }
+
+    @Test
+    void getMyAccounts_noAccountsFound() {
+
+        customer.setAccounts(List.of());
+        when(customerRepository.findByEmail(customer.getEmail())).thenReturn(Optional.of(customer));
+
+
+        Assertions.assertThrows(BankingException.class,
+                () -> accountService.getMyAccounts(customer.getEmail()));
+    }
+
+
 }

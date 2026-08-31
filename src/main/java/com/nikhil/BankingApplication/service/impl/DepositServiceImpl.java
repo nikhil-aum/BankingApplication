@@ -28,7 +28,7 @@ public class DepositServiceImpl implements DepositService {
     }
 
     @Override
-    public TransactionResultDTO deposit(TransactionRequestDTO request) {
+    public TransactionResultDTO deposit(TransactionRequestDTO request,String email) {
 
 
         logger.info("Deposit request received for account {} with amount {}",
@@ -46,6 +46,11 @@ public class DepositServiceImpl implements DepositService {
                     return new AccountOwnershipException();
                 });
 
+        if (!account.getOwner().getEmail().equals(email)) {
+            logger.warn("Ownership violation: User {} tried to deposit in account {}",
+                    email, account.getAccountNumber());
+            throw new AccountOwnershipException();
+        }
 
         Transaction transaction = new Transaction();
         transaction.setType(TransactionType.DEPOSIT);

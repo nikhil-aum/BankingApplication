@@ -4,5 +4,5 @@ import com.nikhil.BankingApplication.dto.TransactionRequestDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 
 public interface DepositService {
-    TransactionResultDTO deposit(TransactionRequestDTO request);
+    TransactionResultDTO deposit(TransactionRequestDTO request,String email);
 }

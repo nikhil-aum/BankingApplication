@@ -29,7 +29,7 @@ public class WithdrawServiceImpl implements WithdrawService {
     }
 
     @Override
-    public TransactionResultDTO withdraw(TransactionRequestDTO request) {
+    public TransactionResultDTO withdraw(TransactionRequestDTO request,String email) {
 
         logger.info("Withdraw request received for account {} with amount {}",
                 request.getAccountNumber(), request.getAmount());
@@ -45,6 +45,12 @@ public class WithdrawServiceImpl implements WithdrawService {
                     logger.error("Account not found with number {}", request.getAccountNumber());
                     return new AccountOwnershipException();
                 });
+
+        if (!account.getOwner().getEmail().equals(email)) {
+            logger.warn("Ownership violation: User {} tried to deposit in account {}",
+                    email, account.getAccountNumber());
+            throw new AccountOwnershipException();
+        }
 
         Transaction transaction = new Transaction();
         transaction.setType(TransactionType.WITHDRAW);

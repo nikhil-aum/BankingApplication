@@ -28,7 +28,7 @@ public class TransferServiceImpl implements TransferService {
 
 
     @Override
-    public TransactionResultDTO transfer(MoneyTransferDTO request) {
+    public TransactionResultDTO transfer(MoneyTransferDTO request,String email) {
         logger.info("Transfer request: Sender={}, Recipient={}, Amount={}",
                 request.getSenderAccountNumber(), request.getRecipientAccountNumber(), request.getAmount());
 
@@ -41,6 +41,12 @@ public class TransferServiceImpl implements TransferService {
             logger.error("Sender account not found: {}", request.getSenderAccountNumber());
             return new AccountOwnershipException();
         });
+
+        if (!sender.getOwner().getEmail().equals(email)) {
+            logger.warn("Ownership violation: User {} tried to deposit in account {}",
+                    email, sender.getAccountNumber());
+            throw new AccountOwnershipException();
+        }
 
         Account recipient = accountRepository.findById(request.getRecipientAccountNumber())
                 .orElseThrow(() -> {

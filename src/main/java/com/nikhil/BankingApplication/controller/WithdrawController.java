@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,8 +28,10 @@ public class WithdrawController {
 
     @PostMapping
     @Operation(summary = "Withdraw money")
-    public ResponseEntity<TransactionResultDTO> deposit(@Valid @RequestBody TransactionRequestDTO request) {
-        TransactionResultDTO response = withdrawService.withdraw(request);
+    public ResponseEntity<TransactionResultDTO> deposit(@Valid @RequestBody TransactionRequestDTO request, Authentication authentication) {
+
+        String email = authentication.getName();
+        TransactionResultDTO response = withdrawService.withdraw(request,email);
         return ResponseEntity.ok(response);
     }
 }
