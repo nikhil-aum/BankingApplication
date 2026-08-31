@@ -40,6 +40,10 @@ public class AccountServiceImpl implements AccountService {
         Customer customer = customerRepository.findByEmail(email)
                 .orElseThrow(() ->new BankingException("Customer not found"));
 
+        if (request.getAccountType() == null) {
+            logger.error("Account type is missing for customer {}", email);
+            throw new BankingException("Account type is required");
+        }
 
         AccountType type = request.getAccountType();
 
