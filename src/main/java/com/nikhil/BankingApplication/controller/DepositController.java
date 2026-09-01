@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/deposit")
-@Tag(name = "3. Deposit", description = "Deposit APIs")
+@Tag(name = " Deposit", description = "Deposit APIs")
 public class DepositController {
     private final DepositService depositService;
 
@@ -26,8 +27,10 @@ public class DepositController {
     @PostMapping
     @Operation(summary = "Deposit money")
 
-    public ResponseEntity<TransactionResultDTO> deposit(@Valid @RequestBody TransactionRequestDTO request) {
-        TransactionResultDTO response = depositService.deposit(request);
+    public ResponseEntity<TransactionResultDTO> deposit(@Valid @RequestBody TransactionRequestDTO request, Authentication authentication) {
+
+        String email = authentication.getName();
+        TransactionResultDTO response = depositService.deposit(request,email);
         return ResponseEntity.ok(response);
     }
 }

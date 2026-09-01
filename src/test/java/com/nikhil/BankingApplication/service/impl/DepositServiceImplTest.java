@@ -3,6 +3,7 @@ package com.nikhil.BankingApplication.service.impl;
 import com.nikhil.BankingApplication.dto.TransactionRequestDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.entity.Account;
+import com.nikhil.BankingApplication.entity.Customer;
 import com.nikhil.BankingApplication.entity.TransactionStatus;
 import com.nikhil.BankingApplication.exception.AccountOwnershipException;
 import com.nikhil.BankingApplication.exception.BankingException;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DepositServiceImplTest {
+
     @Mock
     private AccountRepository accountRepository;
 
@@ -31,14 +33,18 @@ public class DepositServiceImplTest {
     private DepositServiceImpl depositService;
 
     private Account account;
-
+    private Customer owner;
 
     @BeforeEach
     void setup() {
+        owner = new Customer();
+        owner.setEmail("testuser@example.com");
+
         account = new Account();
         account.setAccountNumber("123456");
         account.setBalance(BigDecimal.valueOf(5000));
         account.setTransactions(new ArrayList<>());
+        account.setOwner(owner);
     }
 
     @Test
@@ -48,7 +54,7 @@ public class DepositServiceImplTest {
         request.setConfirmAccountNumber("999999");
         request.setAmount(BigDecimal.valueOf(1000));
 
-        assertThrows(BankingException.class, () -> depositService.deposit(request));
+        assertThrows(BankingException.class, () -> depositService.deposit(request, "testuser@example.com"));
     }
 
     @Test
@@ -60,7 +66,21 @@ public class DepositServiceImplTest {
 
         when(accountRepository.findById("123456")).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(AccountOwnershipException.class, () -> depositService.deposit(request));
+        Assertions.assertThrows(AccountOwnershipException.class,
+                () -> depositService.deposit(request, "testuser@example.com"));
+    }
+
+    @Test
+    void deposit_ownershipViolation() {
+        TransactionRequestDTO request = new TransactionRequestDTO();
+        request.setAccountNumber("123456");
+        request.setConfirmAccountNumber("123456");
+        request.setAmount(BigDecimal.valueOf(1000));
+
+        when(accountRepository.findById("123456")).thenReturn(Optional.of(account));
+
+        Assertions.assertThrows(AccountOwnershipException.class,
+                () -> depositService.deposit(request, "otheruser@example.com"));
     }
 
     @Test
@@ -72,10 +92,11 @@ public class DepositServiceImplTest {
 
         when(accountRepository.findById("123456")).thenReturn(Optional.of(account));
 
-        TransactionResultDTO result = depositService.deposit(request);
+        TransactionResultDTO result = depositService.deposit(request, "testuser@example.com");
 
         Assertions.assertEquals(TransactionStatus.FAILED, account.getTransactions().get(0).getStatus());
         verify(accountRepository, times(1)).save(account);
+        Assertions.assertTrue(result.getMessage().contains("Deposit failed"));
     }
 
     @Test
@@ -88,7 +109,7 @@ public class DepositServiceImplTest {
         when(accountRepository.findById("123456")).thenReturn(Optional.of(account));
         when(accountRepository.save(account)).thenReturn(account);
 
-        TransactionResultDTO result = depositService.deposit(request);
+        TransactionResultDTO result = depositService.deposit(request, "testuser@example.com");
 
         Assertions.assertEquals(BigDecimal.valueOf(6000), account.getBalance());
         Assertions.assertEquals(TransactionStatus.SUCCESS, account.getTransactions().get(0).getStatus());
