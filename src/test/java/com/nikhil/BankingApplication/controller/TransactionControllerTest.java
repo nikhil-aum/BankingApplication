@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -47,11 +47,13 @@ class TransactionControllerTest {
                 "SUCCESS"
         );
 
-        when(transactionService.getTransactionHistory(eq("123456"), eq("testuser@example.com")))
+        when(transactionService.getTransactionHistory(
+                eq("123456"), eq("testuser@example.com"),
+                any(), any(), any(), any(), any()))
                 .thenReturn(List.of(dto));
 
         mockMvc.perform(
-                        get("/api/accounts/123456/history")
+                        get("/api/accounts/123456/transactions")
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -66,10 +68,12 @@ class TransactionControllerTest {
     @Test
     @WithMockUser(username = "testuser@example.com")
     void getTransactionHistory_accountNotFound_shouldReturn404() throws Exception {
-        when(transactionService.getTransactionHistory(eq("999999"), eq("testuser@example.com")))
+        when(transactionService.getTransactionHistory(
+                eq("999999"), eq("testuser@example.com"),
+                any(), any(), any(), any(), any()))
                 .thenThrow(new com.nikhil.BankingApplication.exception.AccountNotFoundException("Wrong account number"));
 
-        mockMvc.perform(get("/api/accounts/999999/history")
+        mockMvc.perform(get("/api/accounts/999999/transactions")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -78,12 +82,66 @@ class TransactionControllerTest {
     @Test
     @WithMockUser(username = "testuser@example.com")
     void getTransactionHistory_ownershipMismatch_shouldReturn403() throws Exception {
-        when(transactionService.getTransactionHistory(eq("123456"), eq("testuser@example.com")))
+        when(transactionService.getTransactionHistory(
+                eq("123456"), eq("testuser@example.com"),
+                any(), any(), any(), any(), any()))
                 .thenThrow(new com.nikhil.BankingApplication.exception.AccountOwnershipException());
 
-        mockMvc.perform(get("/api/accounts/123456/history")
+        mockMvc.perform(get("/api/accounts/123456/transactions")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "testuser@example.com")
+    void getTransactionHistory_filterByType_shouldReturn200() throws Exception {
+        TransactionHistoryDTO dto = new TransactionHistoryDTO(
+                2L,
+                "WITHDRAW",
+                BigDecimal.valueOf(500),
+                LocalDateTime.now(),
+                "Withdraw success",
+                BigDecimal.valueOf(5500),
+                "SUCCESS"
+        );
+
+        when(transactionService.getTransactionHistory(
+                eq("123456"), eq("testuser@example.com"),
+                eq("WITHDRAW"), any(), any(), any(), any()))
+                .thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/api/accounts/123456/transactions")
+                        .param("type", "WITHDRAW")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].type").value("WITHDRAW"));
+    }
+
+    @Test
+    @WithMockUser(username = "testuser@example.com")
+    void getTransactionHistory_filterByStatus_shouldReturn200() throws Exception {
+        TransactionHistoryDTO dto = new TransactionHistoryDTO(
+                3L,
+                "TRANSFER_OUT",
+                BigDecimal.valueOf(200),
+                LocalDateTime.now(),
+                "Transfer out",
+                BigDecimal.valueOf(5300),
+                "FAILED"
+        );
+
+        when(transactionService.getTransactionHistory(
+                eq("123456"), eq("testuser@example.com"),
+                any(), eq("FAILED"), any(), any(), any()))
+                .thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/api/accounts/123456/transactions")
+                        .param("status", "FAILED")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].status").value("FAILED"));
     }
 }

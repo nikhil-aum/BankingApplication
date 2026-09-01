@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/accounts")
-@Tag(name = " Transactions", description = "Transaction APIs")
+@Tag(name = "Transactions", description = "Transaction APIs")
 public class TransactionController {
 
     private final TransactionService transactionService;
@@ -21,74 +21,21 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    @GetMapping("/{accountNumber}/history")
-    @Operation(summary = "Get Transaction History")
-    public ResponseEntity<List<TransactionHistoryDTO>> getTransactionHistory(@PathVariable String accountNumber, Authentication authentication){
-        String email = authentication.getName();
-        List<TransactionHistoryDTO> transactions = transactionService.getTransactionHistory(accountNumber, email);
-        return ResponseEntity.ok(transactions);
-    }
+    @GetMapping("/{accountNumber}/transactions")
+    @Operation(summary = "Get All Transaction History")
+    public ResponseEntity<List<TransactionHistoryDTO>> getTransactionHistory(
+            @PathVariable String accountNumber,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Double balance,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            Authentication authentication) {
 
-    @GetMapping("/{accountNumber}/deposit-history")
-    @Operation(summary = "Get Deposit Transaction History")
-    public ResponseEntity<List<TransactionHistoryDTO>> getDepositHistory(@PathVariable String accountNumber,Authentication authentication) {
         String email = authentication.getName();
-        List<TransactionHistoryDTO> response = transactionService.getTransactionHistoryByTypeDeposit(accountNumber, email);
+        List<TransactionHistoryDTO> response = transactionService.getTransactionHistory(
+                accountNumber, email, type, status, balance, from, to);
+
         return ResponseEntity.ok(response);
     }
-
-    @GetMapping("/{accountNumber}/withdraw-history")
-    @Operation(summary = "Get Withdraw Transaction History")
-    public ResponseEntity<List<TransactionHistoryDTO>> getWithdrawHistory(@PathVariable String accountNumber,Authentication authentication) {
-        String email = authentication.getName();
-        List<TransactionHistoryDTO> response = transactionService.getTransactionHistoryByTypeWithdraw(accountNumber, email);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{accountNumber}/transferIn-history")
-    @Operation(summary = "Get Transfer-In Transaction History")
-    public ResponseEntity<List<TransactionHistoryDTO>> getTransferInHistory(@PathVariable String accountNumber,Authentication authentication) {
-        String email = authentication.getName();
-        List<TransactionHistoryDTO> response = transactionService.getTransactionHistoryByTypeTransferIn(accountNumber, email);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{accountNumber}/transferOut-history")
-    @Operation(summary = "Get Transfer-Out Transaction History")
-    public ResponseEntity<List<TransactionHistoryDTO>> getTransferOutHistory(@PathVariable String accountNumber,Authentication authentication) {
-        String email = authentication.getName();
-        List<TransactionHistoryDTO> response = transactionService.getTransactionHistoryByTypeTransferOut(accountNumber, email);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{amount}/balance-history")
-    public ResponseEntity<List<TransactionHistoryDTO>> getTransactionHistoryByBalance(@PathVariable double amount,Authentication authentication){
-        String email = authentication.getName();
-        List<TransactionHistoryDTO> response = transactionService.getTransactionHistoryByBalance(amount,email);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/time-history")
-    @Operation(summary = "Get Transaction History by Time Range")
-    public ResponseEntity<?> getTransactionHistoryByTime(@RequestParam String from,
-                                                         @RequestParam String to,
-                                                         Authentication authentication) {
-        String email = authentication.getName();
-        List<TransactionHistoryDTO> response = transactionService.getTransactionHistoryByTime(from, to, email);
-
-        return ResponseEntity.ok(response);
-
-    }
-
-    @GetMapping("/status-history")
-    @Operation(summary = "Get Transaction History by Status")
-    public ResponseEntity<?> getTransactionHistoryByStatus(@RequestParam String status,
-                                                           Authentication authentication) {
-        String email = authentication.getName();
-        List<TransactionHistoryDTO> response = transactionService.getTransactionHistoryByStatus(status, email);
-
-        return ResponseEntity.ok(response);
-
-    }
-
 }
