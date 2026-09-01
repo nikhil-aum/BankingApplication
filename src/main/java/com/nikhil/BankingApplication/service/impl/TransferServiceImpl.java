@@ -1,7 +1,7 @@
 package com.nikhil.BankingApplication.service.impl;
 
-import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.dto.MoneyTransferDTO;
+import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.entity.Account;
 import com.nikhil.BankingApplication.entity.Transaction;
 import com.nikhil.BankingApplication.entity.TransactionStatus;
@@ -10,12 +10,16 @@ import com.nikhil.BankingApplication.exception.AccountOwnershipException;
 import com.nikhil.BankingApplication.exception.BankingException;
 import com.nikhil.BankingApplication.repository.AccountRepository;
 import com.nikhil.BankingApplication.service.TransferService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
 public class TransferServiceImpl implements TransferService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TransferServiceImpl.class);
     private final AccountRepository accountRepository;
 
     public TransferServiceImpl(AccountRepository accountRepository){
@@ -24,22 +28,39 @@ public class TransferServiceImpl implements TransferService {
 
 
     @Override
-    public TransactionResultDTO transfer(MoneyTransferDTO request) {
+    public TransactionResultDTO transfer(MoneyTransferDTO request,String email) {
+        logger.info("Transfer request: Sender={}, Recipient={}, Amount={}",
+                request.getSenderAccountNumber(), request.getRecipientAccountNumber(), request.getAmount());
+
         if (!request.getRecipientAccountNumber().equals(request.getConfirmRecipientAccountNumber())) {
             throw new BankingException("Something went wrong.....");
         }
 
         Account sender = accountRepository.findById(request.getSenderAccountNumber())
-                .orElseThrow(() -> new AccountOwnershipException());
+         .orElseThrow(() -> {
+            logger.error("Sender account not found: {}", request.getSenderAccountNumber());
+            return new AccountOwnershipException();
+        });
+
+        if (!sender.getOwner().getEmail().equals(email)) {
+            logger.warn("Ownership violation: User {} tried to deposit in account {}",
+                    email, sender.getAccountNumber());
+            throw new AccountOwnershipException();
+        }
 
         Account recipient = accountRepository.findById(request.getRecipientAccountNumber())
-                .orElseThrow(() -> new BankingException("Recipient account not exist..... " ));
+                .orElseThrow(() -> {
+            logger.error("Recipient account not found: {}", request.getRecipientAccountNumber());
+            return new BankingException("Recipient account not exist..... ");
+        });
 
         if (sender.getAccountNumber().equals(recipient.getAccountNumber())) {
+            logger.warn("Transfer failed: Sender and recipient accounts are same ({})", sender.getAccountNumber());
             throw new BankingException("Transfer failed: Sender and recipient accounts can't be same");
         }
 
         if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            logger.warn("Transfer failed: Invalid amount {} from sender {}", request.getAmount(), sender.getAccountNumber());
             Transaction failedTx = new Transaction(
                     null,
                     TransactionType.TRANSFER_OUT,
@@ -56,6 +77,8 @@ public class TransferServiceImpl implements TransferService {
         }
 
         if (request.getAmount().compareTo(sender.getBalance()) > 0) {
+            logger.warn("Transfer failed: Insufficient balance. Sender={}, Balance={}, Requested={}",
+                    sender.getAccountNumber(), sender.getBalance(), request.getAmount());
             Transaction failedTx = new Transaction(
                     null,
                     TransactionType.TRANSFER_OUT,
@@ -101,6 +124,11 @@ public class TransferServiceImpl implements TransferService {
 
         accountRepository.save(sender);
         accountRepository.save(recipient);
+
+
+        logger.info("Transfer successful: ₹{} from {} to {}. Sender balance={}, Recipient balance={}",
+                request.getAmount(), sender.getAccountNumber(), recipient.getAccountNumber(),
+                sender.getBalance(), recipient.getBalance());
 
         TransactionResultDTO response = new TransactionResultDTO();
         response.setMessage("₹" + request.getAmount() + " transferred successfully from " +sender.getOwner().getName()+ " to " +recipient.getOwner().getName());

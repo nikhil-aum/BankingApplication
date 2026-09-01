@@ -1,6 +1,7 @@
 package com.nikhil.BankingApplication.controller;
 
 import com.nikhil.BankingApplication.dto.AccountDetailsDTO;
+import com.nikhil.BankingApplication.dto.AccountListDTO;
 import com.nikhil.BankingApplication.dto.CreateAccountDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.service.AccountService;
@@ -11,10 +12,10 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringJUnitConfig
+
 @WebMvcTest(AccountController.class)
 class AccountControllerTest {
 
@@ -73,4 +74,44 @@ class AccountControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Balance in your Account : 1000"));
     }
+
+    @Test
+    @WithMockUser(username = "ram@example.com")
+    void testGetMyAccounts() throws Exception {
+
+        AccountListDTO account1 = new AccountListDTO();
+        account1.setAccountNumber("123456789012");
+        account1.setAccountType("SAVING");
+        account1.setBalance(BigDecimal.valueOf(1000));
+
+        AccountListDTO account2 = new AccountListDTO();
+        account2.setAccountNumber("987654321098");
+        account2.setAccountType("CURRENT");
+        account2.setBalance(BigDecimal.valueOf(5000));
+
+        when(accountService.getMyAccounts("ram@example.com"))
+                .thenReturn(List.of(account1, account2));
+
+        mockMvc.perform(get("/api/accounts/my-accounts"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+
+                .andExpect(jsonPath("$[0].accountNumber")
+                        .value("123456789012"))
+                .andExpect(jsonPath("$[0].accountType")
+                        .value("SAVING"))
+                .andExpect(jsonPath("$[0].balance")
+                        .value(1000))
+
+                .andExpect(jsonPath("$[1].accountNumber")
+                        .value("987654321098"))
+                .andExpect(jsonPath("$[1].accountType")
+                        .value("CURRENT"))
+                .andExpect(jsonPath("$[1].balance")
+                        .value(5000));
+    }
+
+
+
 }

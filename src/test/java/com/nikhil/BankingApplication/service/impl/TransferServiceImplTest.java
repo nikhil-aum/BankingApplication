@@ -25,6 +25,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TransferServiceImplTest {
+
     @Mock
     private AccountRepository accountRepository;
 
@@ -39,27 +40,27 @@ public class TransferServiceImplTest {
         sender = new Account();
         sender.setAccountNumber("111");
         sender.setBalance(BigDecimal.valueOf(5000));
-        sender.setTransactions(new java.util.ArrayList<>());
+        sender.setTransactions(new ArrayList<>());
         sender.setOwner(new Customer(null, "ram", "ram@gmail.com", "pass123", null, new ArrayList<>()));
 
         recipient = new Account();
         recipient.setAccountNumber("222");
         recipient.setBalance(BigDecimal.valueOf(2000));
-        recipient.setTransactions(new java.util.ArrayList<>());
+        recipient.setTransactions(new ArrayList<>());
         recipient.setOwner(new Customer(null, "shyam", "shyam@gmail.com", "pass098", null, new ArrayList<>()));
     }
 
     @Test
     void transfer_recipientMismatch() {
         MoneyTransferDTO request = new MoneyTransferDTO("111", "222", "999", BigDecimal.valueOf(1000));
-       assertThrows(BankingException.class, () -> transferService.transfer(request));
+        assertThrows(BankingException.class, () -> transferService.transfer(request, "ram@gmail.com"));
     }
 
     @Test
     void transfer_senderNotFound() {
         MoneyTransferDTO request = new MoneyTransferDTO("111", "222", "222", BigDecimal.valueOf(1000));
         when(accountRepository.findById("111")).thenReturn(Optional.empty());
-        assertThrows(AccountOwnershipException.class, () -> transferService.transfer(request));
+        assertThrows(AccountOwnershipException.class, () -> transferService.transfer(request, "ram@gmail.com"));
     }
 
     @Test
@@ -67,14 +68,14 @@ public class TransferServiceImplTest {
         MoneyTransferDTO request = new MoneyTransferDTO("111", "222", "222", BigDecimal.valueOf(1000));
         when(accountRepository.findById("111")).thenReturn(Optional.of(sender));
         when(accountRepository.findById("222")).thenReturn(Optional.empty());
-        assertThrows(BankingException.class, () -> transferService.transfer(request));
+        assertThrows(BankingException.class, () -> transferService.transfer(request, "ram@gmail.com"));
     }
 
     @Test
     void transfer_sameAccount() {
         MoneyTransferDTO request = new MoneyTransferDTO("111", "111", "111", BigDecimal.valueOf(1000));
         when(accountRepository.findById("111")).thenReturn(Optional.of(sender));
-        assertThrows(BankingException.class, () -> transferService.transfer(request));
+        assertThrows(BankingException.class, () -> transferService.transfer(request, "ram@gmail.com"));
     }
 
     @Test
@@ -82,7 +83,7 @@ public class TransferServiceImplTest {
         MoneyTransferDTO request = new MoneyTransferDTO("111", "222", "222", BigDecimal.valueOf(-180));
         when(accountRepository.findById("111")).thenReturn(Optional.of(sender));
         when(accountRepository.findById("222")).thenReturn(Optional.of(recipient));
-        assertThrows(BankingException.class, () -> transferService.transfer(request));
+        assertThrows(BankingException.class, () -> transferService.transfer(request, "ram@gmail.com"));
         Assertions.assertEquals(TransactionStatus.FAILED, sender.getTransactions().get(0).getStatus());
     }
 
@@ -91,7 +92,7 @@ public class TransferServiceImplTest {
         MoneyTransferDTO request = new MoneyTransferDTO("111", "222", "222", BigDecimal.valueOf(6000));
         when(accountRepository.findById("111")).thenReturn(Optional.of(sender));
         when(accountRepository.findById("222")).thenReturn(Optional.of(recipient));
-        assertThrows(BankingException.class, () -> transferService.transfer(request));
+        assertThrows(BankingException.class, () -> transferService.transfer(request, "ram@gmail.com"));
         Assertions.assertEquals(TransactionStatus.FAILED, sender.getTransactions().get(0).getStatus());
     }
 
@@ -103,15 +104,12 @@ public class TransferServiceImplTest {
         when(accountRepository.save(sender)).thenReturn(sender);
         when(accountRepository.save(recipient)).thenReturn(recipient);
 
-        TransactionResultDTO result = transferService.transfer(request);
+        TransactionResultDTO result = transferService.transfer(request, "ram@gmail.com");
 
         Assertions.assertEquals(BigDecimal.valueOf(4000), sender.getBalance());
         Assertions.assertEquals(BigDecimal.valueOf(3000), recipient.getBalance());
         Assertions.assertEquals(TransactionStatus.SUCCESS, sender.getTransactions().get(0).getStatus());
         Assertions.assertEquals(TransactionStatus.SUCCESS, recipient.getTransactions().get(0).getStatus());
         Assertions.assertTrue(result.getMessage().contains("transferred successfully"));
-
     }
-
-
 }
