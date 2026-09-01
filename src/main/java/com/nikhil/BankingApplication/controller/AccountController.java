@@ -6,8 +6,11 @@ import com.nikhil.BankingApplication.dto.AccountListDTO;
 import com.nikhil.BankingApplication.dto.CreateAccountDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.service.AccountService;
+import com.nikhil.BankingApplication.service.impl.AccountServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +22,8 @@ import java.util.List;
 public class AccountController {
     private final AccountService accountService;
 
+    private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
+
     public AccountController(AccountService accountService){
         this.accountService = accountService;
     }
@@ -28,8 +33,11 @@ public class AccountController {
     @Operation(summary = "Open account")
     public ResponseEntity<AccountDetailsDTO> createAccount(@Valid @RequestBody CreateAccountDTO request, Authentication authentication){
         String email = authentication.getName();
+        logger.info("Received account creation request for customer {}", email);
 
         AccountDetailsDTO account = accountService.createAccount(request,email);
+
+        logger.info("Account {} created successfully for customer {}", account.getAccountNumber(), email);
 
         return ResponseEntity.ok(account);
     }
