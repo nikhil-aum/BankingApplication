@@ -6,7 +6,6 @@ import com.nikhil.BankingApplication.dto.AccountListDTO;
 import com.nikhil.BankingApplication.dto.CreateAccountDTO;
 import com.nikhil.BankingApplication.dto.TransactionResultDTO;
 import com.nikhil.BankingApplication.service.AccountService;
-import com.nikhil.BankingApplication.service.impl.AccountServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -22,7 +21,7 @@ import java.util.List;
 public class AccountController {
     private final AccountService accountService;
 
-    private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccountController.class);
 
     public AccountController(AccountService accountService){
         this.accountService = accountService;
