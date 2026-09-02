@@ -40,7 +40,7 @@ public class TransactionServiceImpl implements TransactionService {
             String email,
             String type,
             String status,
-            Double balance,
+            Double amount,
             String from,
             String to) {
 
@@ -76,8 +76,8 @@ public class TransactionServiceImpl implements TransactionService {
                         }
                     }
 
-                    if (balance != null) {
-                        matches = matches && tx.getBalanceAfterTransaction().doubleValue() < balance;
+                    if (amount != null) {
+                        matches = matches && tx.getAmount().doubleValue() < amount;
                     }
 
                     if (from != null && to != null) {

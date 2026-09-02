@@ -27,14 +27,14 @@ public class TransactionController {
             @PathVariable String accountNumber,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) Double balance,
+            @RequestParam(required = false) Double amount,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
             Authentication authentication) {
 
         String email = authentication.getName();
         List<TransactionHistoryDTO> response = transactionService.getTransactionHistory(
-                accountNumber, email, type, status, balance, from, to);
+                accountNumber, email, type, status, amount, from, to);
 
         return ResponseEntity.ok(response);
     }

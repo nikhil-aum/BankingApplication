@@ -10,7 +10,7 @@ public interface TransactionService {
             String email,
             String type,
             String status,
-            Double balance,
+            Double amount,
             String from,
             String to);
 }
